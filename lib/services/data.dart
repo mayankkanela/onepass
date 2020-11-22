@@ -53,7 +53,7 @@ Future<DocumentSnapshot> getAccounts(String userId) async {
   final user = await Auth.getCurrentUser();
   if (user != null) {
     final DocumentSnapshot result = await _firebaseFirestore
-        .collection(Constants.USERS)
+        .collection(Constants.ACCOUNTS)
         .doc(user.uid)
         .get();
     debugPrint(result.data().toString());
@@ -65,13 +65,23 @@ Future<DocumentSnapshot> getAccounts(String userId) async {
 Future<DocumentSnapshot> addAccount(Map<String, dynamic> data) async {
   final user = await Auth.getCurrentUser();
   if (user != null) {
-   await _firebaseFirestore
-        .collection(Constants.ACCOUNTS)
-        .doc(user.uid)
-        .set(data, SetOptions(merge: true));
-   final DocumentSnapshot result =await _firebaseFirestore.doc(user.uid).get();
-   debugPrint(result.data().toString());
-    return result;
+    try {
+      await _firebaseFirestore
+          .collection(Constants.ACCOUNTS)
+          .doc(user.uid)
+          .set({
+        'accounts': FieldValue.arrayUnion([data])
+      }, SetOptions(merge: true));
+      final DocumentSnapshot result = await _firebaseFirestore
+          .collection(Constants.ACCOUNTS)
+          .doc(user.uid)
+          .get();
+      debugPrint(result.data().toString());
+      return result;
+    } catch (e) {
+      debugPrint(e.toString());
+      return null;
+    }
   }
   return null;
 }

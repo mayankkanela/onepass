@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:onepass/models/accounts.dart';
+import 'package:onepass/models/account.dart';
 import 'package:onepass/models/current_user.dart';
 import 'package:onepass/services/auth.dart' as Auth;
 import 'package:onepass/services/data.dart' as Data;
@@ -50,6 +50,36 @@ class UserProvider with ChangeNotifier {
       final docSnap = await Data.updateUser(data);
       if (docSnap != null && docSnap.exists) {
         _currentUser = CurrentUser.fromJson(docSnap.data());
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> addAccount(Map<String, dynamic> data) async {
+    final user = await Auth.getCurrentUser();
+    if (user != null) {
+      final docSnap = await Data.addAccount(data);
+      if (docSnap != null && docSnap.exists) {
+        final data = docSnap.data()['accounts'] as List;
+        _accounts = data.map((e) => Account.fromJson(e)).toList();
+        notifyListeners();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  Future<bool> getAccounts() async {
+    final user = await Auth.getCurrentUser();
+    if (user != null) {
+      final docSnap = await Data.getAccounts(user.uid);
+      if (docSnap != null && docSnap.exists) {
+        final data = docSnap.data()['accounts'] as List;
+
+        _accounts = data.map((e) => Account.fromJson(e)).toList();
+        notifyListeners();
+        debugPrint(_accounts.length.toString());
         return true;
       }
     }

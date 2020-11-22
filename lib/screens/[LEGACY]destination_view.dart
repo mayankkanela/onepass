@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:onepass/screens/passwords.dart';
+
+import 'file:///E:/projects/onepass/lib/screens/passwords/passwords.dart';
 
 import 'generator.dart';
 

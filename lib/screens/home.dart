@@ -1,8 +1,9 @@
 import 'package:encrypt/encrypt.dart' as en;
 import 'package:flutter/material.dart';
 import 'package:onepass/models/destinations.dart';
-import 'package:onepass/screens/passwords.dart';
 import 'package:onepass/utils/utility.dart' as Utils;
+
+import 'file:///E:/projects/onepass/lib/screens/passwords/passwords.dart';
 
 import 'generator.dart';
 
@@ -99,7 +100,7 @@ class _HomeState extends State<Home> {
 
   _decrypt() {
     setState(() {
-      _decrypted = Utils.decrypt(_encrypted, _keyController.text);
+      _decrypted = Utils.decrypt(_encrypted.base64, _keyController.text);
     });
   }
 

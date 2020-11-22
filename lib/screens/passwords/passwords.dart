@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:onepass/models/account.dart';
 import 'package:onepass/providers/user_provider.dart';
+import 'package:onepass/screens/passwords/list_item_account.dart';
 import 'package:onepass/utils/utility.dart' as Utils;
 import 'package:onepass/widget/dialog_title.dart';
 import 'package:provider/provider.dart';
@@ -11,7 +13,9 @@ class Passwords extends StatefulWidget {
 
 class _PasswordsState extends State<Passwords> {
   final TextEditingController _searchBar = new TextEditingController();
-  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _addAccountFormKey = new GlobalKey<FormState>();
+  final GlobalKey<FormState> _secretKeyFormKey = new GlobalKey<FormState>();
+
   bool _searchMode = false;
 
   @override
@@ -90,11 +94,20 @@ class _PasswordsState extends State<Passwords> {
   Widget _buildBody(double dw, double dh) {
     return Consumer<UserProvider>(
         builder: (context, userProvider, child) =>
-            userProvider.accounts.isNotEmpty
-                ? Container()
+            userProvider.accounts.length > 0
+                ? _buildListView(userProvider.accounts, dw, dh)
                 : Center(
                     child: Text('No accounts added'),
                   ));
+  }
+
+  ListView _buildListView(List<Account> accounts, double dw, double dh) {
+    return ListView.builder(
+        itemCount: accounts.length,
+        itemBuilder: (BuildContext _, int index) {
+          final account = accounts[index];
+          return ListItemAccount(account, dw, dh);
+        });
   }
 
   FloatingActionButton _buildFloatingActionButton(double dw, double dh) {
@@ -117,7 +130,7 @@ class _PasswordsState extends State<Passwords> {
               borderRadius: BorderRadius.circular(dh * 4),
             ),
             content: Form(
-              key: _formKey,
+              key: _addAccountFormKey,
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -189,26 +202,89 @@ class _PasswordsState extends State<Passwords> {
         });
   }
 
-  void _fetchAccounts() {}
+  Future<void> _fetchAccounts() async {
+    await Provider.of<UserProvider>(context, listen: false).getAccounts();
+  }
 
-  _secretKeyDialog(String name, String password, double dh, double dw) async {
-    if (_formKey.currentState.validate()) {
+  _secretKeyDialog(String name, String password, double dw, double dh) async {
+    if (_addAccountFormKey.currentState.validate()) {
+      final TextEditingController _keyController = new TextEditingController();
       Navigator.of(context).pop();
       await showDialog(
           context: context,
           builder: (BuildContext _) {
             return AlertDialog(
-              contentPadding: EdgeInsets.zero,
-              actionsPadding: EdgeInsets.zero,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(dh * 4),
-              ),
-              content: Container(
-                width: 10,
-                height: 10,
-              ),
-            );
+                contentPadding: EdgeInsets.zero,
+                actionsPadding: EdgeInsets.zero,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(dh * 4),
+                ),
+                content: Form(
+                  key: _secretKeyFormKey,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DialogTitle(
+                        dh: dh,
+                        dw: dw,
+                        title: 'ENTER SECRET KEY',
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: TextFormField(
+                          controller: _keyController,
+                          obscureText: true,
+                          validator: (text) =>
+                              Utils.emptyOrNullStringValidator(text),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          decoration: InputDecoration(
+                            suffixIcon: Icon(Icons.vpn_key),
+                            hintText: 'secret key',
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          'Always remember your secret key as it is not stored anywhere,'
+                          'this key will be used to decrypt your password so try to use same '
+                          'key all time.',
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600, color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      SizedBox(
+                        height: dh * 2,
+                      ),
+                      GestureDetector(
+                        onTap: () =>
+                            _addAccount(name, password, _keyController),
+                        child: Text(
+                          'DONE',
+                          style: TextStyle(
+                              color: Colors.blue, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                      SizedBox(
+                        height: dh * 2,
+                      )
+                    ],
+                  ),
+                ));
           });
+    }
+  }
+
+  _addAccount(
+      String name, String password, TextEditingController keyController) async {
+    if (_secretKeyFormKey.currentState.validate()) {
+      final hash = Utils.encrypt(password, keyController.text);
+      debugPrint(Utils.decrypt(hash.base64, keyController.text));
+      final Account account = new Account(hash: hash.base64, nickName: name);
+      bool res = await Provider.of<UserProvider>(context, listen: false)
+          .addAccount(account.toJson(account));
+      Navigator.of(context).pop();
     }
   }
 }

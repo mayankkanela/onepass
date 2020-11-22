@@ -44,13 +44,14 @@ en.Encrypted encrypt(String plainText, String key) {
   return encrypted;
 }
 
-String decrypt(en.Encrypted encryptedText, String key) {
+String decrypt(String encryptedText, String key) {
   final content = Utf8Encoder().convert(key);
   final md5 = crypto.md5;
   final digest = md5.convert(content);
   final md5Key = en.Key.fromUtf8(digest.toString());
   final iv = en.IV.fromLength(16);
   final encrypter = en.Encrypter(en.AES(md5Key));
-  final decrypted = encrypter.decrypt(encryptedText, iv: iv);
+  final decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+  // encrypter.decrypt(encryptedText, iv: iv);
   return decrypted;
 }
