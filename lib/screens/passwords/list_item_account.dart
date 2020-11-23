@@ -24,7 +24,7 @@ class ListItemAccount extends StatelessWidget {
             boxShadow: [
               BoxShadow(
                   color: Color(0xffd9d9d9),
-                  offset: Offset(dh * 1, dh * 1),
+                  offset: Offset(dh * 0.6, dh * 0.6),
                   blurRadius: dh * 0.5),
               BoxShadow(
                   color: Colors.white,
