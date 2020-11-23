@@ -6,6 +6,8 @@ import 'package:onepass/utils/utility.dart' as Utils;
 import 'package:onepass/widget/dialog_title.dart';
 import 'package:provider/provider.dart';
 
+import 'bottom_sheet_decrypt.dart';
+
 class Passwords extends StatefulWidget {
   @override
   _PasswordsState createState() => _PasswordsState();
@@ -36,6 +38,7 @@ class _PasswordsState extends State<Passwords> {
     double dh = Utils.displayHeight(context) / 100;
     return SafeArea(
       child: Scaffold(
+        backgroundColor: Colors.white,
         appBar: _buildAppBar(dw, dh),
         body: _buildBody(dw, dh),
         floatingActionButton: _buildFloatingActionButton(dw, dh),
@@ -45,14 +48,33 @@ class _PasswordsState extends State<Passwords> {
 
   AppBar _buildAppBar(double dw, double dh) {
     return AppBar(
-      title: Row(
-        children: [
-          _buildSearchBar(kToolbarHeight / 100, dw),
-          Icon(
-            Icons.account_circle,
-            size: kToolbarHeight / 2,
-          )
-        ],
+      toolbarHeight: kToolbarHeight + dh * 5,
+      elevation: 0,
+      backgroundColor: Colors.white,
+      title: Container(
+        margin: EdgeInsets.symmetric(vertical: dh * 1),
+        padding: EdgeInsets.symmetric(vertical: dh * 1, horizontal: dw * 2),
+        decoration: BoxDecoration(
+            gradient: LinearGradient(colors: [
+              const Color(0xffe6e6e6),
+              Colors.white,
+            ], begin: Alignment(-5, -5), end: Alignment(1, 1)),
+            borderRadius: BorderRadius.circular(dh * 1),
+            boxShadow: [
+              BoxShadow(
+                  color: Color(0xffd9d9d9),
+                  offset: Offset(dh * 1, dh * 1),
+                  blurRadius: dh * 0.5),
+              BoxShadow(
+                  color: Colors.white,
+                  offset: Offset(dh * -1, dh * -1),
+                  blurRadius: dh * 0.5),
+            ]),
+        child: Row(
+          children: [
+            _buildSearchBar(kToolbarHeight / 100, dw),
+          ],
+        ),
       ),
     );
   }
@@ -95,7 +117,9 @@ class _PasswordsState extends State<Passwords> {
     return Consumer<UserProvider>(
         builder: (context, userProvider, child) =>
             userProvider.accounts.length > 0
-                ? _buildListView(userProvider.accounts, dw, dh)
+                ? Container(
+                    margin: EdgeInsets.only(top: dh * 2),
+                    child: _buildListView(userProvider.accounts, dw, dh))
                 : Center(
                     child: Text('No accounts added'),
                   ));
@@ -106,14 +130,20 @@ class _PasswordsState extends State<Passwords> {
         itemCount: accounts.length,
         itemBuilder: (BuildContext _, int index) {
           final account = accounts[index];
-          return ListItemAccount(account, dw, dh);
+          return ListItemAccount(account, dw, dh, _decryptBottomSheet);
         });
   }
 
   FloatingActionButton _buildFloatingActionButton(double dw, double dh) {
     return FloatingActionButton(
+      backgroundColor: Colors.white,
+      elevation: dh * 0.5,
+
       onPressed: () => _addAccountDialog(dw, dh),
-      child: Icon(Icons.add),
+      child: Icon(
+        Icons.add,
+        color: Colors.blue,
+      ),
     );
   }
 
@@ -286,5 +316,22 @@ class _PasswordsState extends State<Passwords> {
           .addAccount(account.toJson(account));
       Navigator.of(context).pop();
     }
+  }
+
+  _decryptBottomSheet(Account account, double dw, double dh) {
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(dh * 4),
+                topRight: Radius.circular(dh * 4))),
+        builder: (BuildContext _) {
+          return BottomSheetDecrypt(
+            dh: dh,
+            dw: dw,
+            account: account,
+          );
+        });
   }
 }
