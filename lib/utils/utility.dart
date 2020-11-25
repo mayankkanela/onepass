@@ -51,7 +51,11 @@ String decrypt(String encryptedText, String key) {
   final md5Key = en.Key.fromUtf8(digest.toString());
   final iv = en.IV.fromLength(16);
   final encrypter = en.Encrypter(en.AES(md5Key));
-  final decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+  try {
+    final decrypted = encrypter.decrypt64(encryptedText, iv: iv);
+    return decrypted;
+  } catch (e) {}
+  return null;
+
   // encrypter.decrypt(encryptedText, iv: iv);
-  return decrypted;
 }

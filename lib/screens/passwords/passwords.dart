@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:onepass/models/account.dart';
 import 'package:onepass/providers/user_provider.dart';
 import 'package:onepass/screens/passwords/list_item_account.dart';
@@ -130,7 +131,18 @@ class _PasswordsState extends State<Passwords> {
         itemCount: accounts.length,
         itemBuilder: (BuildContext _, int index) {
           final account = accounts[index];
-          return ListItemAccount(account, dw, dh, _decryptBottomSheet);
+          return _searchMode
+              ? (account.nickName
+                          .toUpperCase()
+                          .contains(_searchBar.text.toUpperCase()) ||
+                      _searchBar.text
+                          .toUpperCase()
+                          .contains(account.nickName.toUpperCase()))
+                  ? ListItemAccount(account, dw, dh, _decryptBottomSheet)
+                  : SizedBox(
+                      height: 0,
+                    )
+              : ListItemAccount(account, dw, dh, _decryptBottomSheet);
         });
   }
 
@@ -138,7 +150,6 @@ class _PasswordsState extends State<Passwords> {
     return FloatingActionButton(
       backgroundColor: Colors.white,
       elevation: dh * 0.5,
-
       onPressed: () => _addAccountDialog(dw, dh),
       child: Icon(
         Icons.add,
