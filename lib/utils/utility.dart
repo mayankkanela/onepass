@@ -1,8 +1,10 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart' as crypto;
 import 'package:encrypt/encrypt.dart' as en;
 import 'package:flutter/material.dart';
+import 'package:onepass/utils/constants.dart';
 
 bool isNullOrEmpty(String string) {
   if (string == null || string.isEmpty)
@@ -58,4 +60,16 @@ String decrypt(String encryptedText, String key) {
   return null;
 
   // encrypter.decrypt(encryptedText, iv: iv);
+}
+
+String generate(int length) {
+  String pass = '';
+  Random random = new Random();
+  while (length > 0) {
+    int i = random.nextInt(Constants.VECTORS.length);
+    pass = pass +
+        Constants.VECTORS[i][random.nextInt(Constants.VECTORS[i].length)];
+    length--;
+  }
+  return pass;
 }

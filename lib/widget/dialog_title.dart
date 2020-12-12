@@ -14,7 +14,7 @@ class DialogTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: dh * 0.5),
+      padding: EdgeInsets.symmetric(vertical: dh * 0.5, horizontal: dw * 5),
       width: double.infinity,
       decoration: BoxDecoration(
           color: Colors.blue,

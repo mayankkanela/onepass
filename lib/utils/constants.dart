@@ -7,4 +7,11 @@ class Constants {
   //collection ids
   static const USERS = "users";
   static const ACCOUNTS = "accounts";
+
+  static const VECTORS = [
+    r"`~!@#$%^&&*()_+{}:|<>?|-=[];'\,./\",
+    "1234567890",
+    "QWQERTYUIOPASDFGHJKLZXCVBNM",
+    "qwertyuiopasdfghjkklzxcvbnm"
+  ];
 }
