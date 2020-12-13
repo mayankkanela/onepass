@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:onepass/utils/utility.dart' as Utils;
 
 class Generator extends StatefulWidget {
@@ -11,9 +12,9 @@ class Generator extends StatefulWidget {
 class _GeneratorState extends State<Generator> {
   double _sliderValue = 8;
   bool _isInit;
+  String _password;
   @override
   void initState() {
-    debugPrint('here');
     _isInit = true;
     super.initState();
   }
@@ -29,9 +30,7 @@ class _GeneratorState extends State<Generator> {
         body: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(_isInit
-                ? 'MOVE THE SLIDER'
-                : Utils.generate(_sliderValue.toInt())),
+            Text(_isInit ? 'MOVE THE SLIDER' : _password),
             Container(
               padding: EdgeInsets.symmetric(horizontal: dw * 4),
               child: Slider(
@@ -40,6 +39,7 @@ class _GeneratorState extends State<Generator> {
                   setState(() {
                     if (_isInit) _isInit = false;
                     _sliderValue = value;
+                    _password = Utils.generate(_sliderValue.toInt());
                   });
                 },
                 value: _sliderValue,
@@ -49,6 +49,21 @@ class _GeneratorState extends State<Generator> {
                 label: _sliderValue.truncate().toString(),
               ),
             ),
+            Container(
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(dh * 2),
+                  border: Border.all(color: Colors.grey)),
+              margin:
+                  EdgeInsets.symmetric(vertical: dh * 1, horizontal: dw * 10),
+              child: FlatButton(
+                padding: EdgeInsets.symmetric(vertical: dh * 2),
+                onPressed: () => _copyItem(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Icon(Icons.copy), Text('TAP TO COPY')],
+                ),
+              ),
+            )
           ],
         ),
       ),
@@ -91,5 +106,23 @@ class _GeneratorState extends State<Generator> {
         ],
       ),
     );
+  }
+
+  _copyItem() async {
+    if (!Utils.isNullOrEmpty(_password))
+      await Clipboard.setData(ClipboardData(text: _password)).then((value) {
+        final snackBar = SnackBar(
+          content: Text('Copied to Clipboard'),
+          duration: Duration(seconds: 1),
+        );
+        Scaffold.of(context).showSnackBar(snackBar);
+      });
+    else {
+      final snackBar = SnackBar(
+        content: Text('Generate Password First!'),
+        duration: Duration(seconds: 1),
+      );
+      Scaffold.of(context).showSnackBar(snackBar);
+    }
   }
 }
